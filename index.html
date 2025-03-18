@@ -24,6 +24,7 @@
             font-size: 30px;
             color: white;
             margin-bottom: 20px;
+            transition: opacity 0.5s ease-in-out;
         }
 
         .container {
@@ -139,25 +140,44 @@
             ctx.fillStyle = "#FFCCE1";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            ctx.globalCompositeOperation = "destination-out"; // Enables erasing
+
             let isScratching = false;
-            let totalScratched = 0;
-            const revealThreshold = 3000;
+            let scratchedPixels = 0;
+            let totalPixels = canvas.width * canvas.height;
+            const revealThreshold = 0.4; // 40% of the area must be scratched
+
+            function getPointerPosition(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+                    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+                };
+            }
 
             function scratch(e) {
                 if (!isScratching) return;
 
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                e.preventDefault();
+                const { x, y } = getPointerPosition(e);
 
-                ctx.fillStyle = "#FF0080";
                 ctx.beginPath();
-                ctx.arc(x, y, 40, 0, Math.PI * 2);
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
                 ctx.fill();
 
-                totalScratched += 50;
+                updateScratchedArea();
+            }
 
-                if (totalScratched > revealThreshold) {
+            function updateScratchedArea() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let clearPixels = 0;
+
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                    if (imageData.data[i + 3] === 0) clearPixels++;
+                }
+
+                scratchedPixels = clearPixels;
+                if (scratchedPixels / totalPixels > revealThreshold) {
                     revealImage();
                 }
             }
@@ -165,9 +185,8 @@
             function revealImage() {
                 scratchBox.style.display = "none";
                 hiddenImage.style.display = "block";
-                hiddenImage.style.opacity = "1";
                 buttons.style.display = "flex";
-                instructionText.style.display = "none"; // Remove the instruction text
+                instructionText.style.opacity = "0"; // Fade out instruction text
             }
 
             function showStory(step) {
@@ -186,7 +205,11 @@
             canvas.addEventListener("mouseup", () => isScratching = false);
             canvas.addEventListener("mousemove", scratch);
 
-            window.showStory = showStory; // Expose function globally for button clicks
+            canvas.addEventListener("touchstart", () => isScratching = true);
+            canvas.addEventListener("touchend", () => isScratching = false);
+            canvas.addEventListener("touchmove", scratch);
+
+            window.showStory = showStory; // Expose function globally
         });
     </script>
 </body>
