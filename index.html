@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Card Surprise</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #00081A;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        #instructionText {
+            font-family: 'Pacifico', cursive;
+            font-size: 30px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            position: relative;
+            width: 90vw;
+            max-width: 500px;
+            height: 450px;
+            background: #FFCCE1;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(255, 204, 225, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Pacifico', cursive;
+            font-size: 32px;
+            color: #333;
+            text-align: center;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #scratchCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            border-radius: 30px;
+        }
+
+        #hiddenImage {
+            display: none;
+            width: 90vw;
+            max-width: 500px;
+            height: auto;
+            object-fit: contain;
+            position: relative;
+            z-index: 10;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .button-container {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .cute-button {
+            background: #FFCCE1;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-family: 'Pacifico', cursive;
+            color: black;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .cute-button:hover {
+            background: #FF99C8;
+            transform: scale(1.1);
+        }
+
+        #storyText {
+            font-family: 'Pacifico', cursive;
+            font-size: 18px;
+            color: white;
+            margin-top: 15px;
+            display: none;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div id="instructionText">Scratch to find out!</div>
+    <div class="container" id="scratchBox">
+        <canvas id="scratchCanvas"></canvas>
+    </div>
+    <img id="hiddenImage" src="C:/Users/KARTHIKA/Downloads/img.png" alt="Revealed Image">
+
+    <div class="button-container" id="buttons">
+        <button class="cute-button" onclick="showStory(1)">1</button>
+        <button class="cute-button" onclick="showStory(2)">2</button>
+        <button class="cute-button" onclick="showStory(3)">3</button>
+        <button class="cute-button" onclick="showStory(4)">4</button>
+    </div>
+
+    <p id="storyText"></p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById("scratchCanvas");
+            const ctx = canvas.getContext("2d");
+            const hiddenImage = document.getElementById("hiddenImage");
+            const scratchBox = document.getElementById("scratchBox");
+            const buttons = document.getElementById("buttons");
+            const instructionText = document.getElementById("instructionText");
+            const storyText = document.getElementById("storyText");
+
+            canvas.width = scratchBox.clientWidth;
+            canvas.height = scratchBox.clientHeight;
+
+            ctx.fillStyle = "#FFCCE1";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let isScratching = false;
+            let totalScratched = 0;
+            const revealThreshold = 3000;
+
+            function scratch(e) {
+                if (!isScratching) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                ctx.fillStyle = "#FF0080";
+                ctx.beginPath();
+                ctx.arc(x, y, 40, 0, Math.PI * 2);
+                ctx.fill();
+
+                totalScratched += 50;
+
+                if (totalScratched > revealThreshold) {
+                    revealImage();
+                }
+            }
+
+            function revealImage() {
+                scratchBox.style.display = "none";
+                hiddenImage.style.display = "block";
+                hiddenImage.style.opacity = "1";
+                buttons.style.display = "flex";
+                instructionText.style.display = "none"; // Remove the instruction text
+            }
+
+            function showStory(step) {
+                const stories = {
+                    1: "Caught up in his urge to eat delicious chocolates, this cute little kid gobbled up 5 chocolates in 5 minutes.",
+                    2: "But as we know, chocolates are not good for health, so he caught cold and was sneezing-wheezing!!",
+                    3: "To get rid of the cold, he took a medicine and rested well to ease up his body.",
+                    4: "Finally, our boy is back in the gym as everyday, lifting weights and growing stronger!"
+                };
+
+                storyText.innerText = stories[step];
+                storyText.style.display = "block";
+            }
+
+            canvas.addEventListener("mousedown", () => isScratching = true);
+            canvas.addEventListener("mouseup", () => isScratching = false);
+            canvas.addEventListener("mousemove", scratch);
+
+            window.showStory = showStory; // Expose function globally for button clicks
+        });
+    </script>
+</body>
+</html>
