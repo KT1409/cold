@@ -54,6 +54,7 @@
             height: 100%;
             cursor: pointer;
             border-radius: 30px;
+            transition: background 0.3s ease-in-out;
         }
 
         #hiddenImage {
@@ -208,6 +209,15 @@
             canvas.addEventListener("touchstart", () => isScratching = true);
             canvas.addEventListener("touchend", () => isScratching = false);
             canvas.addEventListener("touchmove", scratch);
+
+            // Change color on hover
+            canvas.addEventListener("mouseover", () => {
+                canvas.style.background = "fuchsia";
+            });
+
+            canvas.addEventListener("mouseout", () => {
+                canvas.style.background = "";
+            });
 
             window.showStory = showStory; // Expose function globally
         });
